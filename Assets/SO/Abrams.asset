@@ -15,9 +15,9 @@ MonoBehaviour:
   moveSpeed: 10
   turnSpeed: 100
   turretRotateSpeed: 50
-  health: 100
+  maxHP: 100
   fireCooldown: 1
-  bulletSpeed: 50
+  maxAmmo: 50
   gunElevationSpeed: 30
   minGunAngle: -15
   maxGunAngle: 5

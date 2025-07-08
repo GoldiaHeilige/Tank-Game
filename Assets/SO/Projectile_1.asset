@@ -12,9 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a918c75e21d35464480bc1556c301076, type: 3}
   m_Name: Projectile_1
   m_EditorClassIdentifier: 
-  speed: 5
+  speed: 10
   lifeTime: 10
-  damage: 25
-  shootFX: {fileID: 0}
-  explosionFX: {fileID: 0}
+  damage: 40
+  damageType: 5
+  shootFX: {fileID: 7980029976762078213, guid: f8e81d23cdc7cdc4d911db1652fed830, type: 3}
+  explosionFX: {fileID: 19800008, guid: 47abc633f57cd1741872ac68310d4b2a, type: 3}
   bulletPrefab: {fileID: 7090710131271465290, guid: 84a505414194c524caa1726e655dc99a, type: 3}

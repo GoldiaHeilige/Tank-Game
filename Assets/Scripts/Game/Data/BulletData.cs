@@ -7,6 +7,7 @@ public class BulletSO : ScriptableObject
     public float speed = 40f;
     public float lifeTime = 3f;
     public int damage = 25;
+    public BulletDamageType damageType = BulletDamageType.HE;
 
     [Header("Hiệu ứng")]
     public ParticleSystem shootFX;

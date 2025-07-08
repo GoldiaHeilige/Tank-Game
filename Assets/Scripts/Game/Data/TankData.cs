@@ -8,7 +8,7 @@ public class TankData : ScriptableObject
     public float turretRotateSpeed = 100f;
 
     // Mở rộng sau này:
-    public float health = 100f;
+    public int maxHP = 100;
 
     [Header("Bắn đạn")]
     public float fireCooldown = 1f;
