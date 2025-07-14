@@ -25,7 +25,7 @@ public class TankAmmoUI : MonoBehaviour
 
     private void HandleAmmoChanged(int current, int max)
     {
-        ammoText.text = $"Ammo: {current} / {max}";
+        ammoText.text = $"{current}";
     }
 
     private void HandleReloadStart(float duration)
@@ -38,7 +38,7 @@ public class TankAmmoUI : MonoBehaviour
     private void HandleReloadComplete(int current, int max)
     {
         reloadingText.gameObject.SetActive(false);
-        ammoText.text = $"Ammo: {current} / {max}";
+        ammoText.text = $"{current}";
         isReloading = false;
     }
 

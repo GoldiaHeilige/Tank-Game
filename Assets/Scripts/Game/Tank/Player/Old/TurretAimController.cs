@@ -10,10 +10,17 @@ public class TurretAimController : MonoBehaviour
     public TankData tankData;
     public Image crosshairImage;
 
+    [Header("Module")]
+    [SerializeField] private TankModuleHP turretModule;
+
     private float currentPitch = 0f;
 
     void Update()
     {
+        if (turretModule != null && turretModule.IsDestroyed)
+            return; // 🚫 Turret đã hỏng: không xoay
+
+
         Vector2 screenPoint = crosshairImage.rectTransform.position;
         Ray ray = mainCamera.ScreenPointToRay(screenPoint);
 
@@ -22,14 +29,24 @@ public class TurretAimController : MonoBehaviour
             Vector3 targetPoint = hit.point;
 
             // === XOAY TURRET ===
-            Vector3 dir = targetPoint - turret.position;
-            dir.y = 0;
-            if (dir != Vector3.zero)
+            // === XOAY TURRET (Local Plane) ===
+            Vector3 targetDir = (targetPoint - turret.position);
+
+            // Chuyển hướng từ World → Local theo thân xe
+            Vector3 localTargetDir = turret.parent.InverseTransformDirection(targetDir);
+
+            // Làm phẳng trên mặt phẳng local XZ (bỏ Y local)
+            localTargetDir.y = 0;
+
+            if (localTargetDir != Vector3.zero)
             {
-                Quaternion targetRot = Quaternion.LookRotation(dir);
-                targetRot *= Quaternion.Euler(0f, tankData.turretYawOffset, 0f);
-                turret.rotation = Quaternion.RotateTowards(turret.rotation, targetRot, tankData.turretRotateSpeed * Time.deltaTime);
+                Quaternion localRot = Quaternion.LookRotation(localTargetDir, Vector3.up);
+                Quaternion worldRot = turret.parent.rotation * localRot;
+
+                worldRot *= Quaternion.Euler(0f, tankData.turretYawOffset, 0f);
+                turret.rotation = Quaternion.RotateTowards(turret.rotation, worldRot, tankData.turretRotateSpeed * Time.deltaTime);
             }
+
 
             // === GUN PITCH ===
             Vector3 worldDir = targetPoint - gunPitch.position;

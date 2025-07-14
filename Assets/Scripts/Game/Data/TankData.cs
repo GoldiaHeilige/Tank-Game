@@ -3,14 +3,23 @@
 [CreateAssetMenu(fileName = "NewTankData", menuName = "SO/Tank Data")]
 public class TankData : ScriptableObject
 {
-    public float moveSpeed = 10f;
-    public float turnSpeed = 100f;
-    public float turretRotateSpeed = 100f;
-
-    // Mở rộng sau này:
     public int maxHP = 100;
 
-    [Header("Bắn đạn")]
+
+    [Header("Movement")]
+    public float moveForce = 10f;
+    public float turnForce = 10f;
+    public float moveAcceleration = 5f;
+    public float turnAcceleration = 10f;
+
+    [Header("Turret")]
+    public float turretRotateSpeed = 100f;
+
+    [Header("Gunner Scope")]
+    public float scopeYawSensitivity = 1f;
+    public float scopePitchSensitivity = 1f;
+
+    [Header("Shooting")]
     public float fireCooldown = 1f;
     public int maxAmmo = 5;
 

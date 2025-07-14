@@ -93,52 +93,52 @@ public class BulletCtrl : MonoBehaviour
         int tankHPBefore = 0;
         int tankHPAfter = 0;
 
-        // ⚠️ BẮT BUỘC: khởi tạo null để tránh CS0165
-        TankModuleHP module = null;
-        TankHealth tank = null;
+        TankModuleHP module = hitObject.GetComponentInParent<TankModuleHP>();
+        TankHealth tank = hitObject.GetComponentInParent<TankHealth>();
 
-        // 🎯 Nếu trúng module
-        module = hitObject.GetComponentInParent<TankModuleHP>();
+        // Xử lý module nếu có
         if (module != null)
         {
-            moduleName = module.moduleType.ToString();
+            moduleName = module.config ? module.config.displayName : module.config.type.ToString();
 
             moduleHPBefore = module.GetCurrentHP();
-            moduleDamage = Mathf.Min(moduleHPBefore, bulletData.damage / 2); // clamp
+            moduleDamage = Mathf.Min(moduleHPBefore, bulletData.damage / 2);
             module.TakeDamage(moduleDamage);
             moduleHPAfter = module.GetCurrentHP();
         }
 
-        // 💥 Trừ vào máu chính
-        tank = hitObject.GetComponentInParent<TankHealth>();
+        // Xử lý máu Tank
         if (tank != null)
         {
             tankHPBefore = tank.CurrentHP;
-            tankDamage = bulletData.damage;
 
-            if (moduleName == "Gun")
+            bool allowPen = module == null || module.CanPenetrateTank;
+            float damagePercent = module != null ? module.DamagePercentToTank : 1f;
+
+            if (allowPen)
             {
-                tankDamage = Mathf.RoundToInt(bulletData.damage * 0.25f);
+                tankDamage = Mathf.RoundToInt(bulletData.damage * damagePercent);
+
+                tank.TakeDamage(new DamageMessage
+                {
+                    damage = tankDamage,
+                    attacker = attacker
+                });
+
+                tankHPAfter = tank.CurrentHP;
             }
-
-            tank.TakeDamage(new DamageMessage
-            {
-                damage = tankDamage,
-                attacker = attacker
-            });
-
-            tankHPAfter = tank.CurrentHP;
         }
 
         // 📋 In ra log rõ ràng
         Debug.Log(
             $"📘 [{attackerName}] bắn đạn [{bulletName}] → trúng [{targetName}] | Module: [{moduleName}]" +
-            (module != null ? $" -{moduleDamage} HP module ({moduleHPAfter}/{module.moduleHP})" : "") +
-            (tank != null ? $" | -{tankDamage} HP tank ({tankHPAfter}/{tank.tankData.maxHP})" : "")
+            (module != null ? $" -{moduleDamage} HP module ({moduleHPAfter}/{module.MaxHP})" : "") +
+            (tankDamage > 0 ? $" | -{tankDamage} HP tank ({tankHPAfter}/{tank?.tankData.maxHP})" : "")
         );
 
         Explode();
     }
+
 
     private void Explode()
     {

@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 
+
 public class EnemyShootingAI : MonoBehaviour
 {
     [Header("Bắn đạn")]
@@ -8,6 +9,9 @@ public class EnemyShootingAI : MonoBehaviour
 
     [Header("Thời gian giữa các phát bắn")]
     [SerializeField] private float fireInterval = 2f;
+
+    [Header("Module")]
+    [SerializeField] private TankModuleHP gunModule;
 
     private float fireTimer = 0f;
 
@@ -24,6 +28,12 @@ public class EnemyShootingAI : MonoBehaviour
 
     private void Fire()
     {
+        if (gunModule != null && gunModule.config.type == ModuleType.Gun && gunModule.IsDestroyed)
+        {
+            Debug.Log("🚫 Súng đã hỏng – không thể bắn");
+            return;
+        }
+
         // Lấy đạn từ pool
         GameObject bulletGO = BulletPool.Instance.GetBullet();
         BulletCtrl bullet = bulletGO.GetComponent<BulletCtrl>();

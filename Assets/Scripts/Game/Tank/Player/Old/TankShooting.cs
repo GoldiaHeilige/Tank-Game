@@ -55,7 +55,7 @@ public class TankShooting : MonoBehaviour
     private void Shoot()
     {
 
-        if (gunModule != null && gunModule.moduleType == ModuleType.Gun && gunModule.IsDestroyed)
+        if (gunModule != null && gunModule.config.type == ModuleType.Gun && gunModule.IsDestroyed)
         {
             Debug.Log("🚫 Súng đã hỏng – không thể bắn");
             return;

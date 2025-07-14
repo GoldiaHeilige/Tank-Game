@@ -4,10 +4,16 @@ public class AutoDestroy : MonoBehaviour
 {
     public float lifetime = 60f;
 
-    private void Start()
+/*    private void Start()
+    {
+        Destroy(gameObject, lifetime);
+    }*/
+
+    private void OnEnable()
     {
         Destroy(gameObject, lifetime);
     }
+
 }
 
 // Thêm cái này sau khi Instantiate ( đặc biệt là ở DropSpawner.cs )

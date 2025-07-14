@@ -7,6 +7,9 @@ public class TankHealth : MonoBehaviour, IDamageable
 
     [Header("Hiệu ứng nổ")]
     public GameObject explosionPrefab;
+    public GameObject fireEffectPrefab;
+
+    private TankDeathEffect deathEffect;
 
     public int CurrentHP { get; private set; }
 
@@ -16,6 +19,7 @@ public class TankHealth : MonoBehaviour, IDamageable
     private void Awake()
     {
         CurrentHP = tankData.maxHP;
+        deathEffect = GetComponent<TankDeathEffect>();
     }
 
     private void Start()
@@ -52,13 +56,29 @@ public class TankHealth : MonoBehaviour, IDamageable
     {
         Debug.Log("💥 Tank Destroyed: " + gameObject.name);
 
+        // 1. Gọi hiệu ứng nổ tức thời
         if (explosionPrefab != null)
         {
-            // Tạo hiệu ứng tại vị trí Tank
             Instantiate(explosionPrefab, transform.position, Quaternion.identity);
         }
 
-        Destroy(gameObject);
-    }
+        // 2. Gọi hiệu ứng cháy (gắn vào Hull hoặc tank)
+        if (fireEffectPrefab != null)
+        {
+            Instantiate(fireEffectPrefab, transform.position, Quaternion.identity, transform);
+        }
 
+        // 3. Gọi hiệu ứng chết nâng cao (turret bay) nếu có
+        TankDeathEffect deathEffect = GetComponent<TankDeathEffect>();
+        if (deathEffect != null)
+        {
+            deathEffect.Explode(); // xử lý turret bay, v.v.
+        }
+
+        // 4. Hủy object tank sau X giây nếu không có turret effect
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
 }

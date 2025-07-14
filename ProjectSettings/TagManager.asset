@@ -10,7 +10,7 @@ TagManager:
   - Hull
   - Enemy
   - EnemyBullet
-  - FxTemporaire
+  - Engine
   layers:
   - Default
   - TransparentFX

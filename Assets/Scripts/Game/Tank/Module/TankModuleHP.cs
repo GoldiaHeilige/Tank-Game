@@ -3,8 +3,7 @@
 public class TankModuleHP : MonoBehaviour
 {
     [Header("Cấu hình module")]
-    public ModuleType moduleType = ModuleType.Custom;
-    public int moduleHP = 50;
+    public ModuleConfig config;
 
     private int currentHP;
 
@@ -14,7 +13,7 @@ public class TankModuleHP : MonoBehaviour
 
     private void Awake()
     {
-        currentHP = moduleHP;
+        currentHP = config != null ? config.moduleHP : 50;
     }
 
     public void TakeDamage(int amount)
@@ -26,8 +25,21 @@ public class TankModuleHP : MonoBehaviour
         {
             currentHP = 0;
             OnModuleDestroyed?.Invoke();
+
+            if (config && config.onDestroyedFX)
+            {
+                Instantiate(config.onDestroyedFX, transform.position, transform.rotation);
+            }
         }
     }
 
     public int GetCurrentHP() => currentHP;
+
+    public int MaxHP => config != null ? config.moduleHP : 50;
+
+    public bool CanPenetrateTank => config != null && (!IsDestroyed || config.allowPenetrateWhenDestroyed);
+
+    public float DamagePercentToTank => config != null ? config.damagePercentToTank : 1f;
+
+    public string DisplayName => config != null ? config.displayName : gameObject.name;
 }
