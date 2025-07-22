@@ -6,6 +6,11 @@ public abstract class BaseTankController : MonoBehaviour
     public Rigidbody rb;
     public TankData tankData;
 
+    public TankModuleHP engineModule;
+    public TankModuleHP turretModule;
+    public TankModuleHP gunModule;
+
+
     [Header("Turret & Gun")]
     public Transform turret;
     public Transform gunPitch;
@@ -18,11 +23,28 @@ public abstract class BaseTankController : MonoBehaviour
     protected float currentPitch;
     protected bool canShoot = true;
     protected int currentAmmo;
+    protected TankRepairSystem repairSystem;
+    protected EngineFireHandler fireHandler;
+
 
     protected virtual void Start()
     {
         currentAmmo = tankData.maxAmmo;
+        repairSystem = GetComponent<TankRepairSystem>();
+        fireHandler = GetComponentInChildren<EngineFireHandler>();
+
+        if (engineModule != null)
+        {
+            engineModule.OnDestroyedWithContext += OnModuleDestroyed;
+        }
+
+        if (turretModule != null)
+            turretModule.OnDestroyedWithContext += OnModuleDestroyed;
+
+        if (gunModule != null)
+            gunModule.OnDestroyedWithContext += OnModuleDestroyed;
     }
+
 
     protected virtual void FixedUpdate()
     {
@@ -31,6 +53,9 @@ public abstract class BaseTankController : MonoBehaviour
 
     protected void HandleMovement()
     {
+        if (engineModule != null && engineModule.IsDestroyed) return;
+        if (IsBusy()) return;
+
         if (Vector3.Dot(transform.up, Vector3.up) < 0.5f)
             return;
 
@@ -49,58 +74,78 @@ public abstract class BaseTankController : MonoBehaviour
 
     protected void HandleAiming(Vector3 targetPoint)
     {
+        if (IsBusy()) return;
+
         Debug.DrawLine(turret.position, targetPoint, Color.red);
 
         if (this is PlayerTankController ptc && ptc.camScope != null && ptc.camScope.IsScoped())
             return;
 
         // === XOAY TURRET ===
-        Vector3 worldDir = targetPoint - turret.position;
-        Vector3 flatDir = Vector3.ProjectOnPlane(worldDir, Vector3.up);
-
-        if (flatDir.sqrMagnitude > 0.001f)
+        if (turretModule == null || !turretModule.IsDestroyed)
         {
-            Quaternion worldRot = Quaternion.LookRotation(flatDir, transform.up); // theo Hull nghiêng
-            Quaternion desiredLocalRot = Quaternion.Inverse(transform.rotation) * worldRot;
-            Vector3 euler = desiredLocalRot.eulerAngles;
-            float targetYaw = Mathf.DeltaAngle(turret.localEulerAngles.y, euler.y + tankData.turretYawOffset);
-            float step = tankData.turretRotateSpeed * Time.deltaTime;
-            float yawDelta = Mathf.Clamp(targetYaw, -step, step);
-            turret.localRotation *= Quaternion.Euler(0f, yawDelta, 0f);
+            Vector3 worldDir = targetPoint - turret.position;
+            Vector3 flatDir = Vector3.ProjectOnPlane(worldDir, Vector3.up);
 
+            if (flatDir.sqrMagnitude > 0.001f)
+            {
+                Quaternion worldRot = Quaternion.LookRotation(flatDir, transform.up);
+                Quaternion desiredLocalRot = Quaternion.Inverse(transform.rotation) * worldRot;
+                Vector3 euler = desiredLocalRot.eulerAngles;
+                float targetYaw = Mathf.DeltaAngle(turret.localEulerAngles.y, euler.y + tankData.turretYawOffset);
+                float step = tankData.turretRotateSpeed * Time.deltaTime;
+                float yawDelta = Mathf.Clamp(targetYaw, -step, step);
+                turret.localRotation *= Quaternion.Euler(0f, yawDelta, 0f);
+            }
         }
 
         // === GUN PITCH ===
-        Vector3 gunDir = targetPoint - gunPitch.position;
-        Vector3 localDir = gunPitch.parent.InverseTransformDirection(gunDir).normalized;
+        if (gunModule == null || !gunModule.IsDestroyed)
+        {
+            Vector3 gunDir = targetPoint - gunPitch.position;
+            Vector3 localDir = gunPitch.parent.InverseTransformDirection(gunDir).normalized;
 
-        Vector3 pitchAxis = tankData.gunPitchAxis.normalized;
-        Vector3 forward = Vector3.ProjectOnPlane(Vector3.forward, pitchAxis).normalized;
+            Vector3 pitchAxis = tankData.gunPitchAxis.normalized;
+            Vector3 forward = Vector3.ProjectOnPlane(Vector3.forward, pitchAxis).normalized;
 
-        float angle = Mathf.Atan2(Vector3.Dot(localDir, Vector3.up), Vector3.Dot(localDir, forward)) * Mathf.Rad2Deg;
-        if (tankData.invertGunPitch) angle = -angle;
+            float angle = Mathf.Atan2(Vector3.Dot(localDir, Vector3.up), Vector3.Dot(localDir, forward)) * Mathf.Rad2Deg;
+            if (tankData.invertGunPitch) angle = -angle;
 
-        float min = Mathf.Min(tankData.minGunAngle, tankData.maxGunAngle);
-        float max = Mathf.Max(tankData.minGunAngle, tankData.maxGunAngle);
-        angle = Mathf.Clamp(angle, min, max);
+            float min = Mathf.Min(tankData.minGunAngle, tankData.maxGunAngle);
+            float max = Mathf.Max(tankData.minGunAngle, tankData.maxGunAngle);
+            angle = Mathf.Clamp(angle, min, max);
 
-        currentPitch = Mathf.MoveTowards(currentPitch, angle, tankData.gunElevationSpeed * Time.deltaTime);
+            currentPitch = Mathf.MoveTowards(currentPitch, angle, tankData.gunElevationSpeed * Time.deltaTime);
 
-        Vector3 pitchEuler = Vector3.zero;
-        if (pitchAxis == Vector3.right) pitchEuler.x = currentPitch;
-        else if (pitchAxis == Vector3.forward) pitchEuler.z = currentPitch;
+            Vector3 pitchEuler = Vector3.zero;
+            if (pitchAxis == Vector3.right) pitchEuler.x = currentPitch;
+            else if (pitchAxis == Vector3.forward) pitchEuler.z = currentPitch;
 
-        gunPitch.localEulerAngles = pitchEuler;
+            gunPitch.localEulerAngles = pitchEuler;
+        }
     }
-
 
     protected void HandleShooting(BulletSourceType sourceType)
     {
-        if (!canShoot || currentAmmo <= 0) return;
+        if (!canShoot || currentAmmo <= 0 || (gunModule != null && gunModule.IsDestroyed))
+            return;
+
+        if (IsBusy()) return;
 
         GameObject bulletGO = BulletPool.Instance.GetBullet();
         BulletCtrl bullet = bulletGO.GetComponent<BulletCtrl>();
-        bullet.Init(shootPoint.position, shootPoint.forward, gameObject);
+
+        // ✅ Spread logic
+        Vector3 direction = shootPoint.forward;
+
+        float spread = tankData.spreadAngle; // Value càng cao càng lệch
+
+        float h = Random.Range(-spread, spread);
+        float v = Random.Range(-spread, spread);
+
+        direction = Quaternion.Euler(v, h, 0f) * direction;
+
+        bullet.Init(shootPoint.position, direction, gameObject);
         bullet.Setup(sourceType);
 
         bulletGO.SetActive(true);
@@ -109,6 +154,8 @@ public abstract class BaseTankController : MonoBehaviour
         canShoot = false;
         StartCoroutine(ReloadCooldown());
     }
+
+
 
     private System.Collections.IEnumerator ReloadCooldown()
     {
@@ -123,4 +170,33 @@ public abstract class BaseTankController : MonoBehaviour
 
     // Cần override để nhận input AI hoặc Player
     protected abstract void Update();
+
+    protected virtual void OnModuleDestroyed(TankModuleHP module)
+    {
+        switch (module.config.type)
+        {
+            case ModuleType.Engine:
+                Debug.Log("[ModuleEvent] Engine destroyed → try ignite");
+                fireHandler?.TryIgnite();
+                break;
+
+            case ModuleType.Turret:
+                Debug.Log("[ModuleEvent] Turret bị phá → không xoay được");
+                break;
+
+            case ModuleType.Gun:
+                Debug.Log("[ModuleEvent] Gun bị phá → không bắn được");
+                break;
+
+            // Nếu bạn thêm các loại khác: AmmoRack, Track...
+            default:
+                Debug.Log($"[ModuleEvent] Module bị phá: {module.DisplayName}");
+                break;
+        }
+    }
+
+    protected bool IsBusy()
+    {
+        return repairSystem != null && repairSystem.IsRepairing;
+    }
 }

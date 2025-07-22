@@ -4,22 +4,27 @@ public class TankCameraController : MonoBehaviour
 {
     public TankCameraScope scopeCamera;
     public Cinemachine.CinemachineVirtualCamera orbitCamera;
+    public TankCameraOrbit orbitScript;
 
     void Update()
     {
-        if (Input.GetMouseButtonDown(1))
+        Vector2 delta = InputHandler.Instance?.MouseDelta ?? Vector2.zero;
+
+        if (!scopeCamera.IsScoped() && orbitScript != null)
         {
-            bool enableScope = !scopeCamera.IsScoped();
-            ToggleScope(enableScope);
+            orbitScript.ManualUpdateYawPitch(delta);
+        }
+
+        if (InputHandler.Instance != null && InputHandler.Instance.ScopePressed)
+        {
+            ToggleScope(!scopeCamera.IsScoped());
         }
     }
 
     private void ToggleScope(bool enable)
     {
-        if (orbitCamera != null)
-            orbitCamera.Priority = enable ? 0 : 10;
-
         if (scopeCamera != null)
             scopeCamera.ToggleScope(enable);
     }
 }
+

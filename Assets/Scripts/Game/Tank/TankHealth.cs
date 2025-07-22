@@ -31,7 +31,9 @@ public class TankHealth : MonoBehaviour, IDamageable
     {
         if (CurrentHP <= 0) return;
 
-        Debug.Log($"🛡 {gameObject.name} nhận {msg.damage} từ {msg.attacker.name}");
+        string attackerName = msg.attacker != null ? msg.attacker.name : "🔥 Fire";
+        Debug.Log($"🛡 {gameObject.name} nhận {msg.damage} từ {attackerName}");
+
 
         CurrentHP -= msg.damage;
         CurrentHP = Mathf.Clamp(CurrentHP, 0, tankData.maxHP);

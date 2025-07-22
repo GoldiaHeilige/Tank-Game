@@ -136,6 +136,7 @@ public class BulletCtrl : MonoBehaviour
             (tankDamage > 0 ? $" | -{tankDamage} HP tank ({tankHPAfter}/{tank?.tankData.maxHP})" : "")
         );
 
+        Debug.Log($"🔴 Bullet hit: {collision.collider.name} (tag: {collision.collider.tag})");
         Explode();
     }
 

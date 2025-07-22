@@ -22,6 +22,16 @@ public class PlayerTankController : BaseTankController
     {
         if (InputHandler.Instance == null) return;
 
+        if (InputHandler.Instance.RepairPressed)
+        {
+            repairSystem?.UseRepairKit();
+        }
+
+        if (InputHandler.Instance.ExtinguishPressed)
+        {
+            repairSystem?.UseExtinguisher();
+        }
+
         moveInput = InputHandler.Instance.Vertical;
         turnInput = InputHandler.Instance.Horizontal;
 

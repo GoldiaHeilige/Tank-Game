@@ -10,6 +10,7 @@ public class TankModuleHP : MonoBehaviour
     public bool IsDestroyed => currentHP <= 0;
 
     public System.Action OnModuleDestroyed;
+    public System.Action<TankModuleHP> OnDestroyedWithContext;
 
     private void Awake()
     {
@@ -24,13 +25,24 @@ public class TankModuleHP : MonoBehaviour
         if (currentHP <= 0)
         {
             currentHP = 0;
+
             OnModuleDestroyed?.Invoke();
+            Debug.Log($"[ModuleHP] {DisplayName} bị phá hủy. Gửi callback tới {OnDestroyedWithContext?.Target}");
+            OnDestroyedWithContext?.Invoke(this); 
 
             if (config && config.onDestroyedFX)
             {
                 Instantiate(config.onDestroyedFX, transform.position, transform.rotation);
             }
         }
+    }
+
+    public void Repair()
+    {
+        if (!IsDestroyed) return;
+
+        currentHP = MaxHP;
+        Debug.Log($"[Module] {DisplayName} has been repaired.");
     }
 
     public int GetCurrentHP() => currentHP;

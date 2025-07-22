@@ -18,13 +18,19 @@ MonoBehaviour:
   moveAcceleration: 10
   turnAcceleration: 100
   turretRotateSpeed: 70
-  scopeYawSensitivity: 0.8
-  scopePitchSensitivity: 0.8
+  scopeYawSensitivity: 1
+  scopePitchSensitivity: 1
+  initialZoom: 40
+  minZoom: 20
+  maxZoom: 999
+  zoomStep: 20
   fireCooldown: 1
   maxAmmo: 50
   gunElevationSpeed: 30
   minGunAngle: -15
   maxGunAngle: 8
+  spreadAngle: 0.5
+  engineFireChance: 1
   turretYawOffset: -90
   gunPitchOffset: {x: 0, y: 90, z: 0}
   gunPitchAxis: {x: 1, y: 0, z: 0}

@@ -19,6 +19,12 @@ public class TankData : ScriptableObject
     public float scopeYawSensitivity = 1f;
     public float scopePitchSensitivity = 1f;
 
+    [Header("Scope Zoom Settings")]
+    public float initialZoom = 40f;
+    public float minZoom = 20f;
+    public float maxZoom = 60f;
+    public float zoomStep = 5f;
+
     [Header("Shooting")]
     public float fireCooldown = 1f;
     public int maxAmmo = 5;
@@ -27,6 +33,15 @@ public class TankData : ScriptableObject
     public float gunElevationSpeed = 30f;
     public float minGunAngle = -5f;
     public float maxGunAngle = 15f;
+
+    [Header("Accuracy")]
+    [Range(0f, 5f)]
+    public float spreadAngle = 1f;
+
+    [Header("Risk Stats")]
+    [Range(0f, 1f)]
+    public float engineFireChance = 0.3f;
+
 
     [Header("Model Fix")]
     public float turretYawOffset = 0f;

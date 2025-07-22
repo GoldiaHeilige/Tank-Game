@@ -16,5 +16,5 @@ MonoBehaviour:
   type: 1
   moduleHP: 50
   allowPenetrateWhenDestroyed: 1
-  damagePercentToTank: 1
-  onDestroyedFX: {fileID: 0}
+  damagePercentToTank: 0.7
+  onDestroyedFX: {fileID: 100008, guid: 47abc633f57cd1741872ac68310d4b2a, type: 3}

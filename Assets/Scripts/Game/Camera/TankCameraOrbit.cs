@@ -38,15 +38,8 @@ public class TankCameraOrbit : MonoBehaviour
         Cursor.visible = false;
     }
 
-    void LateUpdate()
+    void Update()
     {
-        float mouseX = InputHandler.Instance?.MouseDelta.x ?? Input.GetAxis("Mouse X");
-        float mouseY = InputHandler.Instance?.MouseDelta.y ?? Input.GetAxis("Mouse Y");
-
-        yaw += mouseX * orbitSpeed * Time.deltaTime;
-        pitch -= mouseY * pitchSpeed * Time.deltaTime;
-        pitch = Mathf.Clamp(pitch, minPitch, maxPitch);
-
         Quaternion rotation = Quaternion.Euler(pitch, yaw, 0f);
         Vector3 pivotPoint = target.position + Vector3.up * height;
         Vector3 desiredCameraPos = pivotPoint - rotation * Vector3.forward * distance;
@@ -66,4 +59,13 @@ public class TankCameraOrbit : MonoBehaviour
         transform.position = finalPos;
         transform.rotation = rotation;
     }
+
+
+    public void ManualUpdateYawPitch(Vector2 mouseDelta)
+    {
+        yaw += mouseDelta.x * orbitSpeed * Time.deltaTime;
+        pitch -= mouseDelta.y * pitchSpeed * Time.deltaTime;
+        pitch = Mathf.Clamp(pitch, minPitch, maxPitch);
+    }
+
 }
